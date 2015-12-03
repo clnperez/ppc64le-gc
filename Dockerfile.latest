@@ -1,0 +1,21 @@
+##
+# Usage: docker build -t ppc64_gc .
+
+FROM ibmcom/ubuntu-ppc64le:14.04
+
+RUN sudo apt-get update && apt-get -y install git gcc curl
+
+# Build & install gc
+WORKDIR /tmp
+COPY go-linux-ppc64le-bootstrap.tbz /tmp
+RUN tar -xvf go-linux-ppc64le-bootstrap.tbz
+ENV GOROOT_BOOTSTRAP /tmp/go-linux-ppc64le-bootstrap
+RUN mkdir -p /go/src/go.googlesource.com && cd /go/src/go.googlesource.com && git clone https://go.googlesource.com/go
+WORKDIR /go/src/go.googlesource.com/go/src/
+RUN ./make.bash
+
+RUN rm -rf /tmp/go-linux-ppc64le-bootstrap*
+
+ENV GOBIN /go/src/go.googlesource.com/go/bin
+ENV PATH /go/src/go.googlesource.com/go/bin:$PATH
+
