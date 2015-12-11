@@ -7,7 +7,7 @@ RUN sudo apt-get update && apt-get -y install git gcc curl
 
 # Build & install gc
 WORKDIR /tmp
-COPY go-linux-ppc64le-bootstrap.tbz /tmp
+COPY go-linux-ppc64le-bootstrap.tbz /tmp/
 RUN tar -xvf go-linux-ppc64le-bootstrap.tbz
 ENV GOROOT_BOOTSTRAP /tmp/go-linux-ppc64le-bootstrap
 RUN mkdir -p /go/src/go.googlesource.com && cd /go/src/go.googlesource.com && git clone https://go.googlesource.com/go
