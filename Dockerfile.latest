@@ -1,9 +1,9 @@
 ##
 # Usage: docker build -t ppc64_gc .
 
-FROM ibmcom/ubuntu-ppc64le:14.04
+FROM ppc64le/ubuntu:16.04
 
-RUN sudo apt-get update && apt-get -y install git gcc curl
+RUN apt-get update && apt-get -y install git gcc curl bzip2
 
 # Build & install gc
 WORKDIR /tmp
