@@ -1,0 +1,48 @@
+##
+# Usage: docker build -t ppc64_gc --no-cache=true -f Dockerfile.commit_id .
+
+FROM ppc64le/ubuntu:16.04
+# no error:
+# ENV GO_VER 91977d07fe461712dc86b397074e589151b76763 DATE=11/20/15
+# ENV GO_VER 0ea1c1f6715c6fe33c38b6292ce2bdccaa86f0e2 DATE=12/01/15
+# ENV GO_VER d86088037762bac6ca95c5e590529a29b5996469 DATE=12/08/15
+# ENV GO_VER 85dd62d5dd507704671c129df8e7c669b7a9f356 DATE=12/12/15
+# ENV GO_VER d4df6f487481fb7a0987faa3cf8c03a684e8f17d DATE=12/14/15
+# ENV GO_VER 22a204dd0fd9003ae51318f5f67f43937b59ee87 DATE=12/15/15
+# ENV GO_VER 01baf13ba587f2caabdec8d6c58cb5c7db7812d1 DATE=12/15/15
+
+# hit nil ptr error:
+# ENV GO_VER go1.6beta1 DATE=12/17/15
+# ENV GO_VER 24a83d35453e29087c4d63954bb8c78a982fc207 DATE=12/15/15
+# ENV GO_VER 86f1944e86ae3e07651dcbfafee37f1e3b0a917d DATE=12/15/15
+# ENV GO_VER 3cc24aa9ab06a57751c08e8bfeb9fc84e82e1ca5 DATE=12/15/15
+# ENV GO_VER 479c47e47801fe6af6fd11c203f5150d8b70581e DATE=12/15/15
+# ENV GO_VER 99fb19194c03c618c0d8faa87b91ba419ae28ee3 DATE=12/15/15
+
+# last known good:
+#ENV GO_VER 01baf13ba587f2caabdec8d6c58cb5c7db7812d1
+# DATE=12/15/15
+
+# bad commit: 99fb19194c03c618c0d8faa87b91ba419ae28ee3 net/http: rework CloseNotifier implementation, clarify expectations i…
+
+# skipped spec: be clearer about which parameter section can be variadic (only html changed)
+
+# FIXEd?? 
+ENV GO_VER go1.6beta2
+
+RUN apt-get update && apt-get -y install git gcc curl bzip2
+
+# Build & install gc
+WORKDIR /tmp
+COPY go-linux-ppc64le-bootstrap.tbz /tmp/
+RUN tar -xvf go-linux-ppc64le-bootstrap.tbz
+ENV GOROOT_BOOTSTRAP /tmp/go-linux-ppc64le-bootstrap
+RUN mkdir -p /go/src/go.googlesource.com && cd /go/src/go.googlesource.com && git clone --no-checkout https://go.googlesource.com/go && cd go && git checkout $GO_VER
+WORKDIR /go/src/go.googlesource.com/go/src/
+RUN ./make.bash
+
+RUN rm -rf /tmp/go-linux-ppc64le-bootstrap*
+
+ENV GOBIN /go/src/go.googlesource.com/go/bin
+ENV PATH /go/src/go.googlesource.com/go/bin:$PATH
+
