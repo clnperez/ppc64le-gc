@@ -1,5 +1,5 @@
 ##
-# Usage: docker build -t ppc64_gc .
+# Usage: docker build -f Dockerfile.latest -t ppc64_gc .
 
 FROM ibmcom/ubuntu-ppc64le:14.04
 
