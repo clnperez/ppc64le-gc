@@ -1,0 +1,22 @@
+##
+# Usage: docker build -f Dockerfile.latest -t ppc64_gc .
+
+FROM ppc64le/ubuntu:16.04
+ENV PATCH_ID "82/21582/3"
+
+RUN apt-get update && apt-get -y install git gcc curl bzip2
+
+# Build & install gc
+WORKDIR /tmp
+COPY go-linux-ppc64le-bootstrap.tbz /tmp/
+RUN tar -xvf go-linux-ppc64le-bootstrap.tbz
+ENV GOROOT_BOOTSTRAP /tmp/go-linux-ppc64le-bootstrap
+RUN mkdir -p /go/src/go.googlesource.com && cd /go/src/go.googlesource.com && git clone https://go.googlesource.com/go
+WORKDIR /go/src/go.googlesource.com/go/src/
+RUN git fetch origin refs/changes/$PATCH_ID && git checkout FETCH_HEAD
+RUN ./make.bash
+RUN rm -rf /tmp/go-linux-ppc64le-bootstrap*
+
+ENV GOBIN /go/src/go.googlesource.com/go/bin
+ENV PATH /go/src/go.googlesource.com/go/bin:$PATH
+
