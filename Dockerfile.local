@@ -1,0 +1,27 @@
+##
+# Usage: docker build -f Dockerfile.local -t ppc64_gc .
+
+FROM ppc64le/ubuntu:16.04
+
+RUN apt-get update && apt-get -y install git gcc curl bzip2
+
+# !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+# !!! SET THIS TO YOUR LOCAL GO SOURCE !!!
+ENV LOCAL_GO_SRC_PATH /home/christy/work/src/go.googlesource.com/
+# !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+
+# Build from your local go source
+WORKDIR /tmp
+COPY go-linux-ppc64le-bootstrap.tbz /tmp/
+RUN tar -xvf go-linux-ppc64le-bootstrap.tbz
+ENV GOROOT_BOOTSTRAP /tmp/go-linux-ppc64le-bootstrap
+RUN mkdir -p /go/src/go.googlesource.com
+COPY $LOCAL_GO_SRC_PATH /go/src/go.googlesource.com/go/src/
+WORKDIR /go/src/go.googlesource.com/go/src/
+RUN ./make.bash
+
+RUN rm -rf /tmp/go-linux-ppc64le-bootstrap*
+
+ENV GOBIN /go/src/go.googlesource.com/go/bin
+ENV PATH /go/src/go.googlesource.com/go/bin:$PATH
+
