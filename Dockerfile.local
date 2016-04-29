@@ -6,8 +6,11 @@ FROM ppc64le/ubuntu:16.04
 RUN apt-get update && apt-get -y install git gcc curl bzip2
 
 # !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
-# !!! SET THIS TO YOUR LOCAL GO SOURCE !!!
-ENV LOCAL_GO_SRC_PATH /home/christy/work/src/go.googlesource.com/
+# Copy your go directory (containing go/src)
+# to this directory. Since the docker build process
+# runs as root, symlinking is not allowed.
+# rsync -rl /home/christy/work/src/github.com/golang/go .
+ENV LOCAL_GO_SRC_PATH go
 # !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 
 # Build from your local go source
@@ -16,7 +19,7 @@ COPY go-linux-ppc64le-bootstrap.tbz /tmp/
 RUN tar -xvf go-linux-ppc64le-bootstrap.tbz
 ENV GOROOT_BOOTSTRAP /tmp/go-linux-ppc64le-bootstrap
 RUN mkdir -p /go/src/go.googlesource.com
-COPY $LOCAL_GO_SRC_PATH /go/src/go.googlesource.com/go/src/
+COPY $LOCAL_GO_SRC_PATH /go/src/go.googlesource.com/go
 WORKDIR /go/src/go.googlesource.com/go/src/
 RUN ./make.bash
 
