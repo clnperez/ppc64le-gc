@@ -1,5 +1,5 @@
 ##
-# Usage: docker build -f Dockerfile.latest -t ppc64_gc .
+# Usage: docker build -f Dockerfile.ubuntu -t ppc64_gc .
 
 FROM ppc64le/ubuntu:16.04
 
