@@ -1,0 +1,28 @@
+# This won't work with gccgo on debian jessie (until it gets gccgo-5)
+FROM ppc64le/buildpack-deps:jessie-scm
+
+# gcc for cgo
+RUN apt-get update && apt-get install -y --no-install-recommends \
+        g++ \
+        gcc \
+        gccgo-4.9 \
+        libc6-dev \
+        make \
+    && rm -rf /var/lib/apt/lists/*
+
+ENV GOLANG_VERSION 1.6.3
+RUN git clone https://go.googlesource.com/go /tmp/go
+WORKDIR /tmp/go/src
+ENV GOROOT_BOOTSTRAP=/usr/
+RUN update-alternatives --install /usr/bin/go go /usr/bin/gccgo-4.9 10
+
+# this fails because go 4.9 doesn't have 'build' since it's based on go 1.3
+RUN ./make.bash
+
+ENV GOPATH /go
+ENV PATH $GOPATH/bin:/usr/local/go/bin:$PATH
+
+RUN mkdir -p "$GOPATH/src" "$GOPATH/bin" && chmod -R 777 "$GOPATH"
+WORKDIR $GOPATH
+
+COPY go-wrapper /usr/local/bin/
