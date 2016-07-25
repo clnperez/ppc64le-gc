@@ -2,7 +2,7 @@
 # Usage: docker build -t ppc64_gc --no-cache=true -f Dockerfile.commit_id .
 
 FROM ppc64le/ubuntu:16.04
-ENV GO_VER go1.6
+ENV GO_VER go1.6.3
 
 RUN apt-get update && apt-get -y install git gcc curl bzip2
 
