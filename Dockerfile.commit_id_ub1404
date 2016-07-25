@@ -1,0 +1,22 @@
+##
+# Usage: docker build -t ppc64_gc:14.04 --no-cache=true -f Dockerfile.commit_id_ub1404 .
+
+FROM ppc64le/ubuntu:14.04
+ENV GO_VER go1.6.3
+
+RUN apt-get update && apt-get -y install git gcc curl bzip2
+
+# Build & install gc
+WORKDIR /tmp
+COPY go-linux-ppc64le-bootstrap.tbz /tmp/
+RUN tar -xvf go-linux-ppc64le-bootstrap.tbz
+ENV GOROOT_BOOTSTRAP /tmp/go-linux-ppc64le-bootstrap
+RUN mkdir -p /go/src/go.googlesource.com && cd /go/src/go.googlesource.com && git clone --no-checkout https://go.googlesource.com/go && cd go && git checkout $GO_VER
+WORKDIR /go/src/go.googlesource.com/go/src/
+RUN ./make.bash
+
+RUN rm -rf /tmp/go-linux-ppc64le-bootstrap*
+
+ENV GOBIN /go/src/go.googlesource.com/go/bin
+ENV PATH /go/src/go.googlesource.com/go/bin:$PATH
+ENV GOPATH /go
