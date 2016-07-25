@@ -19,4 +19,4 @@ RUN rm -rf /tmp/go-linux-ppc64le-bootstrap*
 
 ENV GOBIN /go/src/go.googlesource.com/go/bin
 ENV PATH /go/src/go.googlesource.com/go/bin:$PATH
-
+ENV GOPATH /go
