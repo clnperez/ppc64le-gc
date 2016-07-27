@@ -11,12 +11,12 @@ WORKDIR /tmp
 COPY go-linux-ppc64le-bootstrap.tbz /tmp/
 RUN tar -xvf go-linux-ppc64le-bootstrap.tbz
 ENV GOROOT_BOOTSTRAP /tmp/go-linux-ppc64le-bootstrap
-RUN mkdir -p /go/src/go.googlesource.com && cd /go/src/go.googlesource.com && git clone --no-checkout https://go.googlesource.com/go && cd go && git checkout $GO_VER
-WORKDIR /go/src/go.googlesource.com/go/src/
+RUN cd /usr/local && git clone --no-checkout https://go.googlesource.com/go && cd go && git checkout $GO_VER
+WORKDIR /usr/local/go/src
 RUN ./make.bash
 
 RUN rm -rf /tmp/go-linux-ppc64le-bootstrap*
 
-ENV GOBIN /go/src/go.googlesource.com/go/bin
-ENV PATH /go/src/go.googlesource.com/go/bin:$PATH
+#ENV GOBIN /usr/local/go/bin/go
+ENV PATH /usr/local/go/bin/:$PATH
 ENV GOPATH /go
