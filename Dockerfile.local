@@ -6,10 +6,13 @@ FROM ppc64le/ubuntu:16.04
 RUN apt-get update && apt-get -y install git gcc curl bzip2
 
 # !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
-# Copy your go directory (containing go/src)
+# 1 . Copy your go directory (containing go/src)
 # to this directory. Since the docker build process
 # runs as root, symlinking is not allowed.
 # rsync -rl /home/christy/work/src/github.com/golang/go .
+# - OR -
+# 2. copy this Dockerfile.local and the go-linux-ppc64le-bootstrap.tbz to your 
+# go env, and change the following from 'go' to '.'
 ENV LOCAL_GO_SRC_PATH go
 # !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 
