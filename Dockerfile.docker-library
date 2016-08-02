@@ -1,0 +1,31 @@
+# stretch has gcc-5, which is needed to bootstrap go
+FROM ppc64le/buildpack-deps:stretch-scm
+
+# gcc for cgo and bootstrapping go
+RUN apt-get update && apt-get install -y --no-install-recommends \
+		g++ \
+		gcc \
+		gccgo-5 \
+		libc6-dev \
+		make \
+&& rm -rf /var/lib/apt/lists/*
+
+RUN update-alternatives --install /usr/bin/go go /usr/bin/go-5 10
+
+ENV GOLANG_VERSION 1.6.3
+ENV GOLANG_DOWNLOAD_URL https://golang.org/dl/go${GOLANG_VERSION}.src.tar.gz
+ENV GOLANG_DOWNLOAD_SHA256 6326aeed5f86cf18f16d6dc831405614f855e2d416a91fd3fdc334f772345b00
+ENV GOROOT_BOOTSTRAP /usr
+
+RUN curl -fsSL "$GOLANG_DOWNLOAD_URL" -o golang.tar.gz \
+	&& echo "$GOLANG_DOWNLOAD_SHA256  golang.tar.gz" | sha256sum -c - \
+	&& tar -C /usr/local -xzf golang.tar.gz && cd /usr/local/go/src && ./make.bash && cd / \
+&& rm golang.tar.gz
+
+ENV GOPATH /go
+ENV PATH $GOPATH/bin:/usr/local/go/bin:$PATH
+
+RUN mkdir -p "$GOPATH/src" "$GOPATH/bin" && chmod -R 777 "$GOPATH"
+WORKDIR $GOPATH
+
+COPY go-wrapper /usr/local/bin/
