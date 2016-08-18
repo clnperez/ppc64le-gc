@@ -18,6 +18,7 @@ RUN apt-get update && apt-get install -y --no-install-recommends gccgo-6 \
 	&& update-alternatives --install /usr/bin/go go /usr/bin/go-6 10 \
 	&& curl -fsSL "$GOLANG_DOWNLOAD_URL" -o golang.tar.gz \
 	&& echo "$GOLANG_DOWNLOAD_SHA256  golang.tar.gz" | sha256sum -c - \
+	&& export GOROOT_FINAL=/usr/local/go/ \
 	&& tar -C /tmp/ -xzf golang.tar.gz && cd /tmp/go/src && ./make.bash && cd / \
 	&& mkdir -p /usr/local/go/bin/ \
 	&& cp /tmp/go/bin/* /usr/local/go/bin/ \
