@@ -1,9 +1,6 @@
-FROM ppc64le/buildpack-deps:stretch-scm
+FROM ppc64le/buildpack-deps:jessie-scm
 
-# gcc for cgo and bootstrapping go
 RUN apt-get update && apt-get install -y --no-install-recommends \
-		g++ \
-		gcc \
 		libc6-dev \
 		make \
 	&& apt-get autoremove \
@@ -12,21 +9,23 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
 ENV GOLANG_VERSION 1.6.3
 ENV GOLANG_DOWNLOAD_URL https://golang.org/dl/go${GOLANG_VERSION}.src.tar.gz
 ENV GOLANG_DOWNLOAD_SHA256 6326aeed5f86cf18f16d6dc831405614f855e2d416a91fd3fdc334f772345b00
-ENV GOROOT_BOOTSTRAP /usr
+ENV GOROOT_BOOTSTRAP /usr/local
 
-RUN apt-get update && apt-get install -y --no-install-recommends gccgo-6 \
-	&& update-alternatives --install /usr/bin/go go /usr/bin/go-6 10 \
+# To build go, you need gcc-5
+RUN wget ftp://ftp.unicamp.br/pub/linuxpatch/toolchain/at/ubuntu/dists/precise/6976a827.gpg.key \
+	&& apt-key add 6976a827.gpg.key \
+	&& rm 6976a827.gpg.key \
+	&& echo "deb ftp://ftp.unicamp.br/pub/linuxpatch/toolchain/at/ubuntu trusty at9.0" >> /etc/apt/sources.list \
+	&& apt-get update && apt-get install -y advance-toolchain-at9.0-devel \
+    && rm -rf /var/lib/apt/lists/*
+ENV PATH=/opt/at9.0/bin:/opt/at9.0/sbin:$PATH
+
+RUN GOROOT_BOOTSTRAP=/opt/at9.0 \
 	&& curl -fsSL "$GOLANG_DOWNLOAD_URL" -o golang.tar.gz \
 	&& echo "$GOLANG_DOWNLOAD_SHA256  golang.tar.gz" | sha256sum -c - \
-	&& export GOROOT_FINAL=/usr/local/go/ \
-	&& tar -C /tmp/ -xzf golang.tar.gz && cd /tmp/go/src && ./make.bash && cd / \
-	&& mkdir -p /usr/local/go/bin/ \
-	&& cp /tmp/go/bin/* /usr/local/go/bin/ \
+	&& tar -C /usr/local/ -xzf golang.tar.gz && cd /usr/local/go/src && ./make.bash && cd / \
 	&& rm golang.tar.gz \
-    && rm -rf /tmp/go \
-    && apt-get remove -y --purge gccgo-6 \
-	&& apt-get autoremove -y \
-	&& rm -rf /var/lib/apt/lists/* 
+	&& rm -rf "/usr/local/go/!(bin)"
 
 ENV GOPATH /go
 ENV PATH $GOPATH/bin:/usr/local/go/bin:$PATH
