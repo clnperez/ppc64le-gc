@@ -11,20 +11,19 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
 	&& rm -rf /var/lib/apt/lists/*
 
 # This is ppc64le specific, and won't work for the multi-arch way
-#RUN curl -fsSL ftp://ftp.unicamp.br/pub/ppc64el/ubuntu/14_04/cloud-foundry/go-1.6.2-ppc64le.tar.gz -o go.tar.gz
-#RUN tar xvfz go.tar.gz -C /tmp/
 ENV GOROOT_BOOTSTRAP /tmp/go
 ENV GOLANG_VERSION 1.6.3
 ENV GOLANG_DOWNLOAD_URL https://golang.org/dl/go${GOLANG_VERSION}.src.tar.gz
 ENV GOLANG_DOWNLOAD_SHA256 6326aeed5f86cf18f16d6dc831405614f855e2d416a91fd3fdc334f772345b00
 
-RUN curl -fsSL ftp://ftp.unicamp.br/pub/ppc64el/ubuntu/14_04/cloud-foundry/go-1.6.2-ppc64le.tar.gz -o go.tar.gz \
-    && tar xvfz go.tar.gz -C /tmp/ \
+RUN curl -fsSL ftp://ftp.unicamp.br/pub/ppc64el/ubuntu/14_04/cloud-foundry/go-1.6.2-ppc64le.tar.gz -o golang-1.6.2.tar.gz \
+	&& tar -C /tmp -xzf golang-1.6.2.tar.gz \
 	&& curl -fsSL "$GOLANG_DOWNLOAD_URL" -o golang.tar.gz \
 	&& echo "$GOLANG_DOWNLOAD_SHA256  golang.tar.gz" | sha256sum -c - \
-	&& tar -C /usr/local -xzf golang.tar.gz && cd /usr/local/go/src && ./make.bash && cd / \
-	&& rm golang.tar.gz \
-	&& rm /go.tar.gz && rm -rf /tmp/go
+	&& tar -C /usr/local -xzf golang.tar.gz \
+	&& cd /usr/local/go/src && ./make.bash && cd / \
+	&& rm golang*.tar.gz \
+	&& rm -rf /tmp/go
 
 ENV GOPATH /go
 ENV PATH $GOPATH/bin:/usr/local/go/bin:$PATH
