@@ -1,21 +1,31 @@
 ##
-# Usage: docker build -f Dockerfile.latest -t ppc64_gc .
+# This Dockerfile builds an ubuntu:trusty image with upstream golang
+# Usage: docker build -t ppc64_gc --no-cache=true -f Dockerfile.latest .
+# 
+# To test aginst docker:
+# 1.) build this
+# 2.) navigate to docker repo, replace the FROM line in Docker.ppc64le dockerfile with this
+# 3.) build the Dockerfile.ppc64le image as docker-upstream-golang
+#	docker build -t docker-upstream-golang -f Dockerfile.ppc64le .
+# 4.) run the tests 
+# 	docker run --privileged -it -v `pwd`:/go/src/github.com/docker/docker docker-go ./hack/make.sh binary test-integration-cli
+# Then 
 
-FROM ppc64le/ubuntu:14.04
+FROM ppc64le/ubuntu:trusty
 
-RUN sudo apt-get update && apt-get -y install git gcc curl
+RUN apt-get update && apt-get -y install git gcc curl bzip2
 
-# Build & install gc
-WORKDIR /tmp
-COPY go-linux-ppc64le-bootstrap.tbz /tmp/
-RUN tar -xvf go-linux-ppc64le-bootstrap.tbz
+# Pull upstream go and use the provided bootstrap to build it
+COPY go-linux-ppc64le-bootstrap.tbz /tmp
+RUN tar -C /tmp -xvf /tmp/go-linux-ppc64le-bootstrap.tbz
 ENV GOROOT_BOOTSTRAP /tmp/go-linux-ppc64le-bootstrap
-RUN mkdir -p /go/src/go.googlesource.com && cd /go/src/go.googlesource.com && git clone https://go.googlesource.com/go
-WORKDIR /go/src/go.googlesource.com/go/src/
-RUN ./make.bash
+
+RUN cd /usr/local \
+        && git clone --no-checkout https://go.googlesource.com/go \
+        && cd go && git checkout master && cd src \
+        && ./make.bash 2>&1
 
 RUN rm -rf /tmp/go-linux-ppc64le-bootstrap*
 
-ENV GOBIN /go/src/go.googlesource.com/go/bin
-ENV PATH /go/src/go.googlesource.com/go/bin:$PATH
-
+ENV PATH /usr/local/go/bin/:$PATH
+ENV GOPATH /go
