@@ -1,0 +1,46 @@
+# Push this image to ppc64le/golang:x
+
+FROM ppc64le/buildpack-deps:jessie-scm
+
+# gcc for cgo
+RUN apt-get update && apt-get install -y --no-install-recommends \
+		g++ \
+		gcc \
+		libc6-dev \
+		make \
+                patch \
+	&& rm -rf /var/lib/apt/lists/*
+
+# This is ppc64le specific, and won't work for the multi-arch way
+ENV GOROOT_BOOTSTRAP /tmp/go
+ENV GOLANG_VERSION 1.7.3
+ENV GOLANG_DOWNLOAD_URL https://golang.org/dl/go${GOLANG_VERSION}.src.tar.gz
+ENV GOLANG_DOWNLOAD_SHA256 79430a0027a09b0b3ad57e214c4c1acfdd7af290961dd08d322818895af1ef44
+
+RUN mkdir -p golang-patches
+COPY golang-patches/0001-cmd-compile-large-text-sections-on-ppc64le.patch golang-patches/
+COPY golang-patches/0001-cmd-link-split-large-elf-text-sections-for-ppc64x.patch golang-patches/
+
+
+RUN curl -fsSL ftp://ftp.unicamp.br/pub/ppc64el/ubuntu/14_04/cloud-foundry/go-1.6.2-ppc64le.tar.gz -o golang-1.6.2.tar.gz \
+	&& tar -C /tmp -xzf golang-1.6.2.tar.gz \
+	&& curl -fsSL "$GOLANG_DOWNLOAD_URL" -o golang-src.tar.gz \
+	&& echo "$GOLANG_DOWNLOAD_SHA256  golang-src.tar.gz" | sha256sum -c - \
+	&& tar -C /usr/local -xzf golang-src.tar.gz \
+	&& cd /usr/local/go \
+        && cp /golang-patches/0001-cmd-link-split-large-elf-text-sections-for-ppc64x.patch . \
+        && cp /golang-patches/0001-cmd-compile-large-text-sections-on-ppc64le.patch . \
+        && patch -p1 < 0001-cmd-link-split-large-elf-text-sections-for-ppc64x.patch \
+        && patch -p1 < 0001-cmd-compile-large-text-sections-on-ppc64le.patch \
+        && cd src \
+        && ./make.bash && cd / \
+	&& rm golang*.tar.gz \
+	&& rm -rf /tmp/go
+
+ENV GOPATH /go
+ENV PATH $GOPATH/bin:/usr/local/go/bin:$PATH
+
+RUN mkdir -p "$GOPATH/src" "$GOPATH/bin" && chmod -R 777 "$GOPATH"
+WORKDIR $GOPATH
+
+#COPY go-wrapper /usr/local/bin/
